@@ -3,7 +3,7 @@
 # contents with naming scheme of 'n_', then move   #
 # files to given directory.                        #
 #                                                  #
-# Authour: Web Team (Matt Sanderson)               #
+# Authour: w3                                      #
 # Date: 2019-05-24                                 #
 ####################################################
 
