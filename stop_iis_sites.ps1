@@ -1,7 +1,7 @@
 ################################################################
 # Connect to Windows servers in given list using PS remoting.  #
-# Stop set of same named websites and app pools.             #
-# Authour: Web Admin Team (Matt Sanderson)                     #
+# Stop set of same named websites and app pools.               #
+# Authour: w3                                                  #
 # Version: 1.0                                                 #
 ################################################################
 
@@ -10,15 +10,15 @@ Import-Module WebAdministration
 [System.Collections.ArrayList]$server_list = get-content windows_servers_test.txt
 $site_name = "Default Web Site"
 $pool_name = "DefaultAppPool"
-$from = "matt.sanderson@encana.com"
-$to = @("matt.sanderson@encana.com", "adam.stewart@encana.com", "logan.noonan@encana.com")
+$from = ''
+$to = @('')
 $subject = "IIS Default Site Shut Down Results"
 $body = "Please see attachment."
-$attachment = ".\iis_18_6.log"
-$smtp = "mailhost"
+$attachment = ".\iis_default_sites.log"
+$smtp = ''
 
 # Results in non-terminating errors if host doesn't respond, 
-# but to make it in-step with Linux script, check and remove
+# but check and remove anyway
 
 function define_hosts {
     foreach ($server in $server_list) {
@@ -36,21 +36,22 @@ function stop_sites {
         $success = "[+] $($server) ===> SUCCESS"
         $failure = "[-] $($server) ===> FAILURE"
 
-        $cmds = {(Set-ExecutionPolicy Unrestricted -force), `
+        $cmds = {($ep = Get-ExecutionPolicy), ` 
+                 (Set-ExecutionPolicy Unrestricted -force), `
                  (Import-Module WebAdministration), `
                  (Stop-Website -name $args[0]), `
                  (Stop-WebAppPool -name $args[1]), `
-                 (Set-ExecutionPolicy Restricted -force)}
+                 (Set-ExecutionPolicy $ep -force)}
         $session = New-PSSession -ComputerName $server
 
             Invoke-Command -Session $session -ScriptBlock $cmds -ArgumentList $site_name, $pool_name
 
         try {
             Invoke-WebRequest -Uri $server -ErrorAction "Stop"
-            $failure >> iis_18_6.log
+            $failure >> iis_default_sites.log
         }
         catch [System.Net.WebException] {
-            $success >> iis_18_6.log
+            $success >> iis_default_sites.log
         }
     }
 }
